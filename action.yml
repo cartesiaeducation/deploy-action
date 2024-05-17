@@ -1,18 +1,9 @@
 name: 'Deploy Action'
 description: 'A reusable GitHub Action for deploying to different environments.'
 inputs:
-  has_recette:
-    description: 'Has recette environment'
-    required: false
-    default: 'false'
-  has_demo:
-    description: 'Has demo environment'
-    required: false
-    default: 'false'
-  has_production:
-    description: 'Has production environment'
-    required: false
-    default: 'false'
+  ip:
+    description: 'IP address for the environment'
+    required: true
   slack_bot_token:
     description: 'Slack bot token'
     required: true
@@ -22,31 +13,11 @@ inputs:
   ssh_private_key:
     description: 'SSH private key'
     required: true
-  ip_recette:
-    description: 'IP for recette environment'
-    required: false
-    default: ''
-  ip_demo:
-    description: 'IP for demo environment'
-    required: false
-    default: ''
-  ip_prod:
-    description: 'IP for prod environment'
-    required: false
-    default: ''
   git_organization:
     description: 'Git organization'
     required: true
-  deploy_to_recette:
-    description: 'Deploy to recette ? (true/false)'
-    required: false
-    default: 'false'
-  deploy_to_demo:
-    description: 'Deploy to demo ? (true/false)'
-    required: false
-    default: 'false'
-  deploy_to_production:
-    description: 'Deploy to production ? (true/false)'
+  deploy:
+    description: 'Deploy to environment ? (true/false)'
     required: false
     default: 'false'
 
@@ -61,7 +32,7 @@ runs:
         channel-id: ${{ inputs.slack_channel_id }}
         payload: |
           {
-            "text": "<https://github.com/${{ github.repository }}|${{ github.repository }}> : Deployment started in branch `${{ github.ref_name }}` (In Progress) - Build Link: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Click here for build details>",
+            "text": "<https://github.com/${{ github.repository }}|${{ github.repository }}> : Deployment started in branch `${{ github.ref_name }}` in server with ip address ${{ inputs.ip }} (In Progress) - Build Link: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Click here for build details>",
             "attachments": [
               {
                 "pretext": "Deployment started",
@@ -129,7 +100,7 @@ runs:
         update-ts: ${{ steps.slack.outputs.ts }}
         payload: |
           {
-            "text": "Repository: <https://github.com/${{ github.repository }}|${{ github.repository }}> - Deployment Status in branch `${{ github.ref_name }}`: ${{ job.status }} - Build Link: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Click here for build details>",
+            "text": "Repository: <https://github.com/${{ github.repository }}|${{ github.repository }}> - Deployment Status in branch `${{ github.ref_name }} in server with ip address ${{ inputs.ip }}`: ${{ job.status }} - Build Link: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Click here for build details>",
             "attachments": [
               {
                 "pretext": "Deployment Status: ${{ job.status }}",
