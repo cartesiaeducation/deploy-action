@@ -1,0 +1,32 @@
+name: Sync to Repo
+
+on:
+  push:
+    branches:
+      - master
+      - dev
+      - release-*
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    if: startsWith(github.repository, 'cartesiaeducation/')
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0  # fetches all the history
+      
+      - name: Pushes to another repository
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.CR_PAT }}
+        run: |
+          git config --local user.email "cluster-dev@cartesia-education.fr"
+          git config --local user.name "clustercartesiaeducation"
+          REPO_NAME=$(echo ${{ github.repository }} | cut -d '/' -f 2)
+          BRANCH_NAME=${GITHUB_REF#refs/heads/}
+          git remote add repo "https://x-access-token:${{ secrets.CR_PAT }}@github.com/myriaeducation/$REPO_NAME.git"
+          git checkout $BRANCH_NAME
+          git pull origin $BRANCH_NAME
+          git config --unset-all http.https://github.com/.extraheader
+          git push --force repo $BRANCH_NAME
