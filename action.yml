@@ -13,6 +13,30 @@ inputs:
     description: 'Has production environment'
     required: false
     default: 'false'
+  slack_bot_token:
+    description: 'Slack bot token'
+    required: true
+  slack_channel_id:
+    description: 'Slack notification channel ID'
+    required: true
+  ssh_private_key:
+    description: 'SSH private key'
+    required: true
+  ip_recette:
+    description: 'IP for recette environment'
+    required: false
+    default: ''
+  ip_demo:
+    description: 'IP for demo environment'
+    required: false
+    default: ''
+  ip_prod:
+    description: 'IP for prod environment'
+    required: false
+    default: ''
+  git_organization:
+    description: 'Git organization'
+    required: true
 
 runs:
   using: 'composite'
@@ -20,9 +44,9 @@ runs:
     - id: slack
       uses: slackapi/slack-github-action@v1.25.0
       env:
-        SLACK_BOT_TOKEN: ${{ secrets.SLACK_TOKEN }}
+        SLACK_BOT_TOKEN: ${{ inputs.slack_bot_token }}
       with:
-        channel-id: ${{ vars.SLACK_NOTIFICATION_CHANNEL_ID }}
+        channel-id: ${{ inputs.slack_channel_id }}
         payload: |
           {
             "text": "<https://github.com/${{ github.repository }}|${{ github.repository }}> : Deployment started in branch `${{ github.ref_name }}` (In Progress) - Build Link: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Click here for build details>",
@@ -43,6 +67,8 @@ runs:
     
     - name: Checkout
       uses: actions/checkout@v3
+      with:
+        token: ${{ env.GH_PAT }}
     
     - uses: ruby/setup-ruby@v1
       with:
@@ -52,32 +78,44 @@ runs:
     - name: Setup SSH Keys
       uses: webfactory/ssh-agent@v0.4.1
       with:
-        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+        ssh-private-key: ${{ inputs.ssh_private_key }}
     
     - name: Deploy to recette
-      if: ${{ inputs.has_recette == 'true' }} && vars.DEPLOY_TO_RECETTE == 'true'
-      env:
-        ip: ${{ vars.IP_RECETTE }}
-      run: BRANCH=master IP=$ip GIT_ORGANIZATION="${{ vars.GIT_ORGANIZATION }}" bundle exec cap recette deploy
+      if: ${{ inputs.has_recette == 'true' }}
+      run: |
+        if [[ -z "${{ inputs.ip_recette }}" ]]; then
+          echo "Error: IP_RECETTE is required when has_recette is true"
+          exit 1
+        fi
+        BRANCH=master IP=${{ inputs.ip_recette }} GIT_ORGANIZATION=${{ inputs.git_organization }} bundle exec cap recette deploy
+      shell: bash
     
     - name: Deploy to demo
-      if: ${{ inputs.has_demo == 'true' }} && vars.DEPLOY_TO_DEMO == 'true'
-      env:
-        ip: ${{ vars.IP_DEMO }}
-      run: BRANCH=master IP=$ip GIT_ORGANIZATION="${{ vars.GIT_ORGANIZATION }}" bundle exec cap staging deploy
+      if: ${{ inputs.has_demo == 'true' }}
+      run: |
+        if [[ -z "${{ inputs.ip_demo }}" ]]; then
+          echo "Error: IP_DEMO is required when has_demo is true"
+          exit 1
+        fi
+        BRANCH=master IP=${{ inputs.ip_demo }} GIT_ORGANIZATION=${{ inputs.git_organization }} bundle exec cap staging deploy
+      shell: bash
     
     - name: Deploy to prod
-      if: ${{ inputs.has_production == 'true' }} && vars.DEPLOY_TO_PROD == 'true'
-      env:
-        ip: ${{ vars.IP_PROD }}
-      run: BRANCH=master IP=$ip GIT_ORGANIZATION="${{ vars.GIT_ORGANIZATION }}" bundle exec cap prod deploy
+      if: ${{ inputs.has_production == 'true' }}
+      run: |
+        if [[ -z "${{ inputs.ip_prod }}" ]]; then
+          echo "Error: IP_PROD is required when has_production is true"
+          exit 1
+        fi
+        BRANCH=master IP=${{ inputs.ip_prod }} GIT_ORGANIZATION=${{ inputs.git_organization }} bundle exec cap prod deploy
+      shell: bash
     
     - uses: slackapi/slack-github-action@v1.25.0
       if: always()
       env:
-        SLACK_BOT_TOKEN: ${{ secrets.SLACK_TOKEN }}
+        SLACK_BOT_TOKEN: ${{ inputs.slack_bot_token }}
       with:
-        channel-id: ${{ vars.SLACK_NOTIFICATION_CHANNEL_ID }}
+        channel-id: ${{ inputs.slack_channel_id }}
         update-ts: ${{ steps.slack.outputs.ts }}
         payload: |
           {
