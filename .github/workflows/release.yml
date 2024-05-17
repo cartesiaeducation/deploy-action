@@ -24,7 +24,15 @@ jobs:
           VERSION=$(node -p "require('./package.json').version")
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "::set-output name=version::$VERSION"
-      
+
+      - name: Create Git tag
+        id: create_tag
+        run: |
+          git config --local user.email "cluster-dev@cartesia-education.fr"
+          git config --local user.name "clustercartesiaeducation"
+          git tag v${{ env.VERSION }}
+          git push origin v${{ env.VERSION }}
+          
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
