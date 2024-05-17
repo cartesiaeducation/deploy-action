@@ -22,17 +22,25 @@ jobs:
         id: get_version
         run: |
           VERSION=$(node -p "require('./package.json').version")
+          MAJOR_VERSION=$(echo $VERSION | cut -d. -f1)
           echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "MAJOR_VERSION=$MAJOR_VERSION" >> $GITHUB_ENV
           echo "::set-output name=version::$VERSION"
-
-      - name: Create Git tag
+          echo "::set-output name=major_version::$MAJOR_VERSION"
+      
+      - name: Set up Git
+        run: |
+          git config --global user.email "cluster-dev@cartesia-education.fr"
+          git config --global user.name "clustercartesiaeducation"
+      
+      - name: Create Git tags
         id: create_tag
         run: |
-          git config --local user.email "cluster-dev@cartesia-education.fr"
-          git config --local user.name "clustercartesiaeducation"
           git tag v${{ env.VERSION }}
+          git tag -f v${{ env.MAJOR_VERSION }}
           git push origin v${{ env.VERSION }}
-          
+          git push origin -f v${{ env.MAJOR_VERSION }}
+      
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
