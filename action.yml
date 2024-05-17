@@ -20,6 +20,9 @@ inputs:
     description: 'Deploy to environment ? (true/false)'
     required: false
     default: 'false'
+  stage:
+    description: 'Stage name ? (recette/demo/prod)'
+    required: true
 
 runs:
   using: 'composite'
@@ -32,7 +35,7 @@ runs:
         channel-id: ${{ inputs.slack_channel_id }}
         payload: |
           {
-            "text": "<https://github.com/${{ github.repository }}|${{ github.repository }}> : Deployment started in branch `${{ github.ref_name }}` in server with ip address ${{ inputs.ip }} (In Progress) - Build Link: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Click here for build details>",
+            "text": "<https://github.com/${{ github.repository }}|${{ github.repository }}> : Deployment started in branch `${{ github.ref_name }}` in stage `${{ inputs.stage }}` with ip address `${{ inputs.ip }}` (In Progress) - Build Link: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Click here for build details>",
             "attachments": [
               {
                 "pretext": "Deployment started",
@@ -61,35 +64,12 @@ runs:
       with:
         ssh-private-key: ${{ inputs.ssh_private_key }}
     
-    - name: Deploy to recette
-      if: ${{ inputs.has_recette == 'true' }} && ${{ inputs.deploy_to_recette == 'true' }}
+    - name: Deploy
+      if: ${{ inputs.deploy == 'true' }}
       run: |
-        if [[ -z "${{ inputs.ip_recette }}" ]]; then
-          echo "Error: IP_RECETTE is required when has_recette is true"
-          exit 1
-        fi
-        BRANCH=master IP=${{ inputs.ip_recette }} GIT_ORGANIZATION=${{ inputs.git_organization }} bundle exec cap recette deploy
+        BRANCH=master IP=${{ inputs.ip }} GIT_ORGANIZATION=${{ inputs.git_organization }} bundle exec cap ${{ inputs.stage }} deploy
       shell: bash
-    
-    - name: Deploy to demo
-      if: ${{ inputs.has_demo == 'true' }} && ${{ inputs.deploy_to_demo == 'true' }}
-      run: |
-        if [[ -z "${{ inputs.ip_demo }}" ]]; then
-          echo "Error: IP_DEMO is required when has_demo is true"
-          exit 1
-        fi
-        BRANCH=master IP=${{ inputs.ip_demo }} GIT_ORGANIZATION=${{ inputs.git_organization }} bundle exec cap staging deploy
-      shell: bash
-    
-    - name: Deploy to prod
-      if: ${{ inputs.has_production == 'true' }} && ${{ inputs.deploy_to_production == 'true' }}
-      run: |
-        if [[ -z "${{ inputs.ip_prod }}" ]]; then
-          echo "Error: IP_PROD is required when has_production is true"
-          exit 1
-        fi
-        BRANCH=master IP=${{ inputs.ip_prod }} GIT_ORGANIZATION=${{ inputs.git_organization }} bundle exec cap prod deploy
-      shell: bash
+
     
     - uses: slackapi/slack-github-action@v1.25.0
       if: always()
@@ -100,7 +80,7 @@ runs:
         update-ts: ${{ steps.slack.outputs.ts }}
         payload: |
           {
-            "text": "Repository: <https://github.com/${{ github.repository }}|${{ github.repository }}> - Deployment Status in branch `${{ github.ref_name }} in server with ip address ${{ inputs.ip }}`: ${{ job.status }} - Build Link: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Click here for build details>",
+            "text": "Repository: <https://github.com/${{ github.repository }}|${{ github.repository }}> - Deployment Status in branch `${{ github.ref_name }}` in stage `${{ inputs.stage }}` with ip address `${{ inputs.ip }}`: ${{ job.status }} - Build Link: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Click here for build details>",
             "attachments": [
               {
                 "pretext": "Deployment Status: ${{ job.status }}",
