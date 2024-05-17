@@ -55,19 +55,19 @@ runs:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
     
     - name: Deploy to recette
-      if: ${{ inputs.has_recette == 'true' }}
+      if: ${{ inputs.has_recette == 'true' }} && vars.DEPLOY_TO_RECETTE == 'true'
       env:
         ip: ${{ vars.IP_RECETTE }}
       run: BRANCH=master IP=$ip GIT_ORGANIZATION="${{ vars.GIT_ORGANIZATION }}" bundle exec cap recette deploy
     
     - name: Deploy to demo
-      if: ${{ inputs.has_demo == 'true' }}
+      if: ${{ inputs.has_demo == 'true' }} && vars.DEPLOY_TO_DEMO == 'true'
       env:
         ip: ${{ vars.IP_DEMO }}
       run: BRANCH=master IP=$ip GIT_ORGANIZATION="${{ vars.GIT_ORGANIZATION }}" bundle exec cap staging deploy
     
     - name: Deploy to prod
-      if: ${{ inputs.has_production == 'true' }}
+      if: ${{ inputs.has_production == 'true' }} && vars.DEPLOY_TO_PROD == 'true'
       env:
         ip: ${{ vars.IP_PROD }}
       run: BRANCH=master IP=$ip GIT_ORGANIZATION="${{ vars.GIT_ORGANIZATION }}" bundle exec cap prod deploy
