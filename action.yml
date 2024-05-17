@@ -37,6 +37,18 @@ inputs:
   git_organization:
     description: 'Git organization'
     required: true
+  deploy_to_recette:
+    description: 'Deploy to recette ? (true/false)'
+    required: false
+    default: 'false'
+  deploy_to_demo:
+    description: 'Deploy to demo ? (true/false)'
+    required: false
+    default: 'false'
+  deploy_to_production:
+    description: 'Deploy to production ? (true/false)'
+    required: false
+    default: 'false'
 
 runs:
   using: 'composite'
@@ -79,7 +91,7 @@ runs:
         ssh-private-key: ${{ inputs.ssh_private_key }}
     
     - name: Deploy to recette
-      if: ${{ inputs.has_recette == 'true' }}
+      if: ${{ inputs.has_recette == 'true' }} && ${{ inputs.deploy_to_recette == 'true' }}
       run: |
         if [[ -z "${{ inputs.ip_recette }}" ]]; then
           echo "Error: IP_RECETTE is required when has_recette is true"
@@ -89,7 +101,7 @@ runs:
       shell: bash
     
     - name: Deploy to demo
-      if: ${{ inputs.has_demo == 'true' }}
+      if: ${{ inputs.has_demo == 'true' }} && ${{ inputs.deploy_to_demo == 'true' }}
       run: |
         if [[ -z "${{ inputs.ip_demo }}" ]]; then
           echo "Error: IP_DEMO is required when has_demo is true"
@@ -99,7 +111,7 @@ runs:
       shell: bash
     
     - name: Deploy to prod
-      if: ${{ inputs.has_production == 'true' }}
+      if: ${{ inputs.has_production == 'true' }} && ${{ inputs.deploy_to_production == 'true' }}
       run: |
         if [[ -z "${{ inputs.ip_prod }}" ]]; then
           echo "Error: IP_PROD is required when has_production is true"
