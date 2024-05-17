@@ -1,0 +1,98 @@
+name: 'Deploy Action'
+description: 'A reusable GitHub Action for deploying to different environments.'
+inputs:
+  has_recette:
+    description: 'Has recette environment'
+    required: false
+    default: 'false'
+  has_demo:
+    description: 'Has demo environment'
+    required: false
+    default: 'false'
+  has_production:
+    description: 'Has production environment'
+    required: false
+    default: 'false'
+
+runs:
+  using: 'composite'
+  steps:
+    - id: slack
+      uses: slackapi/slack-github-action@v1.25.0
+      env:
+        SLACK_BOT_TOKEN: ${{ secrets.SLACK_TOKEN }}
+      with:
+        channel-id: ${{ vars.SLACK_NOTIFICATION_CHANNEL_ID }}
+        payload: |
+          {
+            "text": "<https://github.com/${{ github.repository }}|${{ github.repository }}> : Deployment started in branch `${{ github.ref_name }}` (In Progress) - Build Link: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Click here for build details>",
+            "attachments": [
+              {
+                "pretext": "Deployment started",
+                "color": "dbab09",
+                "fields": [
+                  {
+                    "title": "Status",
+                    "short": true,
+                    "value": "In Progress"
+                  }
+                ]
+              }
+            ]
+          }
+    
+    - name: Checkout
+      uses: actions/checkout@v3
+    
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.3'
+        bundler-cache: true
+    
+    - name: Setup SSH Keys
+      uses: webfactory/ssh-agent@v0.4.1
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+    
+    - name: Deploy to recette
+      if: ${{ inputs.has_recette == 'true' }}
+      env:
+        ip: ${{ vars.IP_RECETTE }}
+      run: BRANCH=master IP=$ip GIT_ORGANIZATION="${{ vars.GIT_ORGANIZATION }}" bundle exec cap recette deploy
+    
+    - name: Deploy to demo
+      if: ${{ inputs.has_demo == 'true' }}
+      env:
+        ip: ${{ vars.IP_DEMO }}
+      run: BRANCH=master IP=$ip GIT_ORGANIZATION="${{ vars.GIT_ORGANIZATION }}" bundle exec cap staging deploy
+    
+    - name: Deploy to prod
+      if: ${{ inputs.has_production == 'true' }}
+      env:
+        ip: ${{ vars.IP_PROD }}
+      run: BRANCH=master IP=$ip GIT_ORGANIZATION="${{ vars.GIT_ORGANIZATION }}" bundle exec cap prod deploy
+    
+    - uses: slackapi/slack-github-action@v1.25.0
+      if: always()
+      env:
+        SLACK_BOT_TOKEN: ${{ secrets.SLACK_TOKEN }}
+      with:
+        channel-id: ${{ vars.SLACK_NOTIFICATION_CHANNEL_ID }}
+        update-ts: ${{ steps.slack.outputs.ts }}
+        payload: |
+          {
+            "text": "Repository: <https://github.com/${{ github.repository }}|${{ github.repository }}> - Deployment Status in branch `${{ github.ref_name }}`: ${{ job.status }} - Build Link: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Click here for build details>",
+            "attachments": [
+              {
+                "pretext": "Deployment Status: ${{ job.status }}",
+                "color": "${{ job.status == 'success' && '28a745' || 'ff0000' }}",
+                "fields": [
+                  {
+                    "title": "Status",
+                    "short": true,
+                    "value": "${{ job.status == 'success' && 'Completed' || 'Failure' }}"
+                  }
+                ]
+              }
+            ]
+          }
