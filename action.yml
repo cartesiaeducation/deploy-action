@@ -43,6 +43,8 @@ runs:
     
     - name: Checkout
       uses: actions/checkout@v3
+      with:
+        token: ${{ env.GH_PAT }}  # Ensure the PAT is used here for checkout
     
     - uses: ruby/setup-ruby@v1
       with:
