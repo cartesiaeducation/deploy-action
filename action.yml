@@ -61,10 +61,11 @@ runs:
         ssh-private-key: ${{ inputs.ssh_private_key }}
     
     - name: Deploy
+      id: deploy
       run: |
         BRANCH=master IP=${{ inputs.ip }} GIT_ORGANIZATION=${{ inputs.git_organization }} bundle exec cap ${{ inputs.stage }} deploy
       shell: bash
-
+    
     
     - uses: slackapi/slack-github-action@v1.25.0
       if: always()
@@ -72,19 +73,18 @@ runs:
         SLACK_BOT_TOKEN: ${{ inputs.slack_bot_token }}
       with:
         channel-id: ${{ inputs.slack_channel_id }}
-        update-ts: ${{ steps.slack.outputs.ts }}
         payload: |
           {
-            "text": "Repository: <https://github.com/${{ github.repository }}|${{ github.repository }}> - Deployment Status in branch `${{ github.ref_name }}` in stage `${{ inputs.stage }}` with ip address `${{ inputs.ip }}`: ${{ job.status }} - Build Link: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Click here for build details>",
+            "text": "Repository: <https://github.com/${{ github.repository }}|${{ github.repository }}> - Deployment Status in branch `${{ github.ref_name }}` in stage `${{ inputs.stage }}` with IP address `${{ inputs.ip }}`: ${{ steps.deploy.outcome == 'success' ? 'Success' : 'Failure' }} - Build Link: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Click here for build details>",
             "attachments": [
               {
-                "pretext": "Deployment Status: ${{ steps.checkout.outcome == 'success' && steps.setup_ruby.outcome == 'success' && steps.setup_ssh.outcome == 'success' && steps.deploy.outcome == 'success' && 'success' || 'failure' }}",
-                "color": "${{ steps.checkout.outcome == 'success' && steps.setup_ruby.outcome == 'success' && steps.setup_ssh.outcome == 'success' && steps.deploy.outcome == 'success' && '28a745' || 'ff0000' }}",
+                "pretext": "Deployment Status: ${{ steps.deploy.outcome == 'success' ? 'Success' : 'Failure' }}",
+                "color": "${{ steps.deploy.outcome == 'success' ? '28a745' : 'ff0000' }}",
                 "fields": [
                   {
                     "title": "Status",
                     "short": true,
-                    "value": "${{ steps.checkout.outcome == 'success' && steps.setup_ruby.outcome == 'success' && steps.setup_ssh.outcome == 'success' && steps.deploy.outcome == 'success' && 'Completed' || 'Failure' }}"
+                    "value": "${{ steps.deploy.outcome == 'success' ? 'Completed' : 'Failure' }}"
                   }
                 ]
               }
