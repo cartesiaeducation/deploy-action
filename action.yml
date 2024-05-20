@@ -76,7 +76,7 @@ runs:
 
     
     - uses: slackapi/slack-github-action@v1.25.0
-      if: always() && inputs.deploy == 'true'
+      if: always()
       env:
         SLACK_BOT_TOKEN: ${{ inputs.slack_bot_token }}
       with:
