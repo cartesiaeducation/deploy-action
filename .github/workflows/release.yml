@@ -43,6 +43,7 @@ jobs:
             git tag -f v2
           # Add more elif statements for additional major versions if needed
           fi
+          git config --unset-all http.https://github.com/.extraheader
           git push origin v${{ env.VERSION }}
           if [[ "${{ env.MAJOR_VERSION }}" == "1" ]]; then
             git push origin -f v1
