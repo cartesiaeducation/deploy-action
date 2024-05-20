@@ -62,7 +62,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.CR_PAT }}
         run: |
           git tag v${{ env.VERSION }}
+          git tag v${{ env.MAJOR_VERSION }}
           git push origin v${{ env.VERSION }}
+          git push origin v${{ env.MAJOR_VERSION }}
           
       - name: Create Release
         id: create_release
