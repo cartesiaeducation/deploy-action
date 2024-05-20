@@ -10,6 +10,29 @@ jobs:
     runs-on: ubuntu-latest
     permissions: write-all
     steps:
+      - id: slack
+        uses: slackapi/slack-github-action@v1.25.0
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_TOKEN }}
+        with:
+          channel-id: ${{ vars.SLACK_NOTIFICATION_CHANNEL_ID }}
+          payload: |
+            {
+              "text": "<https://github.com/${{ github.repository }}|${{ github.repository }}> : Publishing started in branch `${{ github.ref_name }}` (In Progress) - Build Link: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Click here for build details>",
+              "attachments": [
+                {
+                  "pretext": "Publishing started",
+                  "color": "dbab09",
+                  "fields": [
+                    {
+                      "title": "Status",
+                      "short": true,
+                      "value": "In Progress"
+                    }
+                  ]
+                }
+              ]
+            }
       - name: Checkout code
         uses: actions/checkout@v3
       
@@ -51,3 +74,28 @@ jobs:
           release_name: "Release v${{ env.VERSION }}"
           draft: false
           prerelease: false
+          
+      - uses: slackapi/slack-github-action@v1.25.0
+        if: always()
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_TOKEN }}
+        with:
+          channel-id: ${{ vars.SLACK_NOTIFICATION_CHANNEL_ID }}
+          update-ts: ${{ steps.slack.outputs.ts }}
+          payload: |
+            {
+              "text": "Repository: <https://github.com/${{ github.repository }}|${{ github.repository }}> - Publishing Status in branch `${{ github.ref_name }}`: ${{ job.status }} - Build Link: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Click here for build details>",
+              "attachments": [
+                {
+                  "pretext": "Publishing Status: ${{ job.status }}",
+                  "color": "${{ job.status == 'success' && '28a745' || 'ff0000' }}",
+                  "fields": [
+                    {
+                      "title": "Status",
+                      "short": true,
+                      "value": "${{ job.status == 'success' && 'Completed' || 'Failure' }}"
+                    }
+                  ]
+                }
+              ]
+            }
