@@ -78,13 +78,13 @@ runs:
             "text": "Repository: <https://github.com/${{ github.repository }}|${{ github.repository }}> - Deployment Status in branch `${{ github.ref_name }}` in stage `${{ inputs.stage }}` with ip address `${{ inputs.ip }}`: ${{ job.status }} - Build Link: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Click here for build details>",
             "attachments": [
               {
-                "pretext": "Deployment Status: ${{ job.status }}",
-                "color": "${{ job.status == 'success' && '28a745' || 'ff0000' }}",
+                "pretext": "Deployment Status: ${{ steps.checkout.outcome == 'success' && steps.setup_ruby.outcome == 'success' && steps.setup_ssh.outcome == 'success' && steps.deploy.outcome == 'success' && 'success' || 'failure' }}",
+                "color": "${{ steps.checkout.outcome == 'success' && steps.setup_ruby.outcome == 'success' && steps.setup_ssh.outcome == 'success' && steps.deploy.outcome == 'success' && '28a745' || 'ff0000' }}",
                 "fields": [
                   {
                     "title": "Status",
                     "short": true,
-                    "value": "${{ job.status == 'success' && 'Completed' || 'Failure' }}"
+                    "value": "${{ steps.checkout.outcome == 'success' && steps.setup_ruby.outcome == 'success' && steps.setup_ssh.outcome == 'success' && steps.deploy.outcome == 'success' && 'Completed' || 'Failure' }}"
                   }
                 ]
               }
