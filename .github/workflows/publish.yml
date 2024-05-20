@@ -34,9 +34,10 @@ jobs:
       
       - name: Create Git tags
         id: create_tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.CR_PAT }}
         run: |
           git tag v${{ env.VERSION }}
-          git remote set-url origin https://x-access-token:${{ secrets.CR_PAT }}@github.com/${{ github.repository }}
           git push origin v${{ env.VERSION }}
           
       - name: Create Release
