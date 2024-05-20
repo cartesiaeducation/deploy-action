@@ -1,4 +1,4 @@
-name: Create Release
+name: Publish Release
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
-    
+    if: startsWith(github.repository, 'cartesiaeducation/')
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -30,27 +30,16 @@ jobs:
       
       - name: Set up Git
         run: |
-          git config --local user.email "cluster-dev@cartesia-education.fr"
-          git config --local user.name "clustercartesiaeducation"
-          git remote set-url origin https://x-access-token:${{ secrets.CR_PAT }}@github.com/${{ github.repository }}
+          git config --global user.email "cluster-dev@cartesia-education.fr"
+          git config --global user.name "clustercartesiaeducation"
       
       - name: Create Git tags
         id: create_tag
         run: |
           git tag v${{ env.VERSION }}
-          if [[ "${{ env.MAJOR_VERSION }}" == "1" ]]; then
-            git tag -f v1
-          elif [[ "${{ env.MAJOR_VERSION }}" == "2" ]]; then
-            git tag -f v2
-          # Add more elif statements for additional major versions if needed
-          fi
+          git remote set-url origin https://x-access-token:${{ secrets.CR_PAT }}@github.com/${{ github.repository }}
           git push origin v${{ env.VERSION }}
-          if [[ "${{ env.MAJOR_VERSION }}" == "1" ]]; then
-            git push origin -f v1
-          elif [[ "${{ env.MAJOR_VERSION }}" == "2" ]]; then
-            git push origin -f v2
-          fi
-      
+          
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
