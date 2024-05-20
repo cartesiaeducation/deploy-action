@@ -16,8 +16,6 @@ jobs:
           fetch-depth: 0  # fetches all the history
       
       - name: Pushes to another repository
-        env:
-          API_TOKEN_GITHUB: ${{ secrets.CR_PAT }}
         run: |
           git config --local user.email "cluster-dev@cartesia-education.fr"
           git config --local user.name "clustercartesiaeducation"
