@@ -16,10 +16,6 @@ inputs:
   git_organization:
     description: 'Git organization'
     required: true
-  deploy:
-    description: 'Deploy to environment ? (true/false)'
-    required: false
-    default: 'false'
   stage:
     description: 'Stage name ? (recette/staging/prod)'
     required: true
@@ -28,7 +24,6 @@ runs:
   using: 'composite'
   steps:
     - id: slack
-      if: ${{ inputs.deploy == 'true' }}
       uses: slackapi/slack-github-action@v1.25.0
       env:
         SLACK_BOT_TOKEN: ${{ inputs.slack_bot_token }}
@@ -53,32 +48,26 @@ runs:
           }
     
     - name: Checkout
-      if: ${{ inputs.deploy == 'true' }}
       uses: actions/checkout@v3
     
     - uses: ruby/setup-ruby@v1
-      if: ${{ inputs.deploy == 'true' }}
       with:
         ruby-version: '3.3'
         bundler-cache: true
-      continue-on-error: true
     
     - name: Setup SSH Keys
-      if: ${{ inputs.deploy == 'true' }}
       uses: webfactory/ssh-agent@v0.4.1
       with:
         ssh-private-key: ${{ inputs.ssh_private_key }}
-      continue-on-error: true
     
     - name: Deploy
-      if: ${{ inputs.deploy == 'true' }}
       run: |
         BRANCH=master IP=${{ inputs.ip }} GIT_ORGANIZATION=${{ inputs.git_organization }} bundle exec cap ${{ inputs.stage }} deploy
       shell: bash
-      continue-on-error: true
+
     
     - uses: slackapi/slack-github-action@v1.25.0
-      if: inputs.deploy == 'true'
+      if: always()
       env:
         SLACK_BOT_TOKEN: ${{ inputs.slack_bot_token }}
       with:
