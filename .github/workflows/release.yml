@@ -28,11 +28,14 @@ jobs:
           echo "::set-output name=version::$VERSION"
           echo "::set-output name=major_version::$MAJOR_VERSION"
       
-      - name: Create Git tags
-        id: create_tag
+      - name: Set up Git
         run: |
           git config --global user.email "cluster-dev@cartesia-education.fr"
           git config --global user.name "clustercartesiaeducation"
+      
+      - name: Create Git tags
+        id: create_tag
+        run: |
           git tag v${{ env.VERSION }}
           if [[ "${{ env.MAJOR_VERSION }}" == "1" ]]; then
             git tag -f v1
@@ -40,7 +43,6 @@ jobs:
             git tag -f v2
           # Add more elif statements for additional major versions if needed
           fi
-          git config --unset-all http.https://github.com/.extraheader
           git push origin v${{ env.VERSION }}
           if [[ "${{ env.MAJOR_VERSION }}" == "1" ]]; then
             git push origin -f v1
