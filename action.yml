@@ -73,6 +73,7 @@ runs:
         SLACK_BOT_TOKEN: ${{ inputs.slack_bot_token }}
       with:
         channel-id: ${{ inputs.slack_channel_id }}
+        update-ts: ${{ steps.slack.outputs.ts }}
         payload: |
           {
             "text": "Repository: <https://github.com/${{ github.repository }}|${{ github.repository }}> - Deployment Status in branch `${{ github.ref_name }}` in stage `${{ inputs.stage }}` with IP address `${{ inputs.ip }}`: ${{ steps.deploy.outcome }} - Build Link: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Click here for build details>",
