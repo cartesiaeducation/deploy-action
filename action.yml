@@ -78,7 +78,7 @@ runs:
             "text": "Repository: <https://github.com/${{ github.repository }}|${{ github.repository }}> - Deployment Status in branch `${{ github.ref_name }}` in stage `${{ inputs.stage }}` with IP address `${{ inputs.ip }}`: ${{ steps.deploy.outcome }} - Build Link: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Click here for build details>",
             "attachments": [
               {
-                "pretext": "Deployment Status: ${{ steps.deploy.outcome == 'success' ? 'Success' : 'Failure' }}",
+                "pretext": "Deployment Status: ${{ steps.deploy.outcome }}",
                 "color": "${{ steps.deploy.outcome == 'success' && '28a745' || 'ff0000' }}",
                 "fields": [
                   {
