@@ -53,8 +53,8 @@ jobs:
       
       - name: Set up Git
         run: |
-          git config --global user.email "cluster-dev@cartesia-education.fr"
-          git config --global user.name "clustercartesiaeducation"
+          git config --global user.email "${{ secrets.GIT_EMAIL }}"
+          git config --global user.name "${{ secrets.GIT_USERNAME }}"
       
       - name: Create Git tags
         id: create_tag
