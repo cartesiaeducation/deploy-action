@@ -19,7 +19,9 @@ inputs:
   stage:
     description: 'Stage name ? (recette/staging/prod)'
     required: true
-
+  branch:
+    description: 'Branch name to be deployed'
+    required: true
 runs:
   using: 'composite'
   steps:
@@ -63,7 +65,7 @@ runs:
     - name: Deploy
       id: deploy
       run: |
-        BRANCH=master IP=${{ inputs.ip }} GIT_ORGANIZATION=${{ inputs.git_organization }} bundle exec cap ${{ inputs.stage }} deploy
+        BRANCH=${{ inputs.branch }} IP=${{ inputs.ip }} GIT_ORGANIZATION=${{ inputs.git_organization }} bundle exec cap ${{ inputs.stage }} deploy
       shell: bash
     
     
