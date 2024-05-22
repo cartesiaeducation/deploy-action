@@ -22,6 +22,7 @@ inputs:
   branch:
     description: 'Branch name to be deployed'
     required: true
+    
 runs:
   using: 'composite'
   steps:
@@ -67,7 +68,6 @@ runs:
       run: |
         BRANCH=${{ inputs.branch }} IP=${{ inputs.ip }} GIT_ORGANIZATION=${{ inputs.git_organization }} bundle exec cap ${{ inputs.stage }} deploy
       shell: bash
-    
     
     - uses: slackapi/slack-github-action@v1.25.0
       if: always()
