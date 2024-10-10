@@ -66,7 +66,7 @@ runs:
     - name: Deploy
       id: deploy
       run: |
-        BRANCH=${{ inputs.branch }} IP=${{ inputs.ip }} GIT_ORGANIZATION=${{ inputs.git_organization }} bundle exec cap ${{ inputs.stage }} deploy
+        BRANCH=${{ inputs.branch }} IP=${{ inputs.ip }} GIT_ORGANIZATION=${{ inputs.git_organization }} GIT_SHA=${{ github.sha }} bundle exec cap ${{ inputs.stage }} deploy
       shell: bash
     
     - uses: slackapi/slack-github-action@v1.25.0
