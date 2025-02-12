@@ -68,9 +68,14 @@ runs:
       with:
         ssh-private-key: ${{ inputs.ssh_private_key }}
     
-    - name: Update SSH known_hosts
-      run: ssh-keyscan -H ${{ inputs.ip }} >> ~/.ssh/known_hosts
+    - name: Remove old SSH key
+      run: ssh-keygen -R ${{ inputs.ip }}
       shell: bash
+
+    - name: Update SSH known_hosts
+      run: ssh-keyscan -H ${{ inputs.ip }} > ~/.ssh/known_hosts
+      shell: bash
+
       
     - name: Deploy
       id: deploy
