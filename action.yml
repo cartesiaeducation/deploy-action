@@ -53,6 +53,12 @@ runs:
             ]
           }
     
+    - name: Force update SSH known_hosts
+      run: |
+        ssh-keygen -R ${{ inputs.ip }} || true
+        ssh-keyscan -H -t ed25519 ${{ inputs.ip }} > ~/.ssh/known_hosts
+      shell: bash
+
     - name: Checkout
       uses: actions/checkout@v3
       with:
@@ -68,16 +74,6 @@ runs:
       with:
         ssh-private-key: ${{ inputs.ssh_private_key }}
 
-    - name: Debug SSH Keyscan
-      run: ssh-keyscan -H -t ed25519 ${{ inputs.ip }}
-      shell: bash
-
-
-    - name: Update SSH known_hosts
-      run: ssh-keyscan -H ${{ inputs.ip }} > ~/.ssh/known_hosts
-      shell: bash
-
-      
     - name: Deploy
       id: deploy
       run: |
