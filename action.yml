@@ -56,6 +56,7 @@ runs:
     - name: Force update SSH known_hosts
       run: |
         mkdir -p ~/.ssh
+        chmod 700 ~/.ssh
         touch ~/.ssh/known_hosts
         ssh-keygen -R ${{ inputs.ip }} || true
         ssh-keyscan -H -t ed25519 ${{ inputs.ip }} > ~/.ssh/known_hosts
