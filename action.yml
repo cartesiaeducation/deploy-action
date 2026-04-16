@@ -67,7 +67,7 @@ runs:
         touch "$HOME/.ssh/known_hosts"
         chmod 644 "$HOME/.ssh/known_hosts"
         ssh-keygen -R "${{ inputs.ip }}" -f "$HOME/.ssh/known_hosts" || true
-        ssh-keyscan -H -t rsa,ecdsa,ed25519 "${{ inputs.ip }}" >> "$HOME/.ssh/known_hosts" 2>/dev/null
+        ssh-keyscan -H -t ed25519 "${{ inputs.ip }}" >> "$HOME/.ssh/known_hosts" 2>/dev/null
 
     - name: Fix workspace permissions before checkout
       shell: bash
