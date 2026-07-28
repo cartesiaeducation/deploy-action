@@ -63,6 +63,10 @@ runs:
       shell: bash
       run: |
         mkdir -p "$HOME/.ssh"
+        # A prior root/docker step in the pipeline can leave ~/.ssh owned by root,
+        # making the chmod below fail with "Operation not permitted" and reddening
+        # the whole deploy. Reclaim ownership first (sudo is available on the runner).
+        sudo chown -R "$(id -u):$(id -g)" "$HOME/.ssh" || true
         chmod 700 "$HOME/.ssh"
         touch "$HOME/.ssh/known_hosts"
         chmod 644 "$HOME/.ssh/known_hosts"
